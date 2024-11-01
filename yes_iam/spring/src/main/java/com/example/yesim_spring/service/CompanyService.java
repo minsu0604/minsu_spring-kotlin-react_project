@@ -7,7 +7,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -40,11 +39,5 @@ public class CompanyService {
             companyRepository.save(company);
         }
 //        companyRepository.deleteById(companyId);
-    }
-
-
-    public List<CompanyDto> getSearchCompanyList(String searchVal){
-        return companyRepository.findAllByNameContaining(searchVal)
-                .stream().map(CompanyDto::of).toList();
     }
 }

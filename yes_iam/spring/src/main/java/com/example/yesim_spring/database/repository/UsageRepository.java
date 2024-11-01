@@ -148,47 +148,10 @@ public interface UsageRepository extends JpaRepository<UsageEntity, Long> {
     int getTotalUsageSumByDateAndUser(@Param("dateForm") String dateForm, @Param("userId") String userId);
 
 
-    @Query(value = "select ifnull(count(ui.item_id), 0) from(" +
-            "select usage_info.item_id, usage_info.user_seq " +
-            "from (" +
-            "select iu.usage_time, u.user_seq, i.item_id, i.name as item_name, u.user_name " +
-            "   from item_usage as iu " +
-            "       inner join item as i on iu.item_id = i.item_id " +
-            "           inner join user as u on iu.user_seq = u.user_seq " +
-            ") as usage_info " +
-            " where date_format(usage_info.usage_time, :dateForm) = date_format(now(), :dateForm)  " +
-            "                    group by usage_info.item_id, usage_info.user_seq " +
-
-            ") as ui ", nativeQuery = true)
+    @Query(value = "select ifnull(count(*), 0) from item_usage where date_format(usage_time, :dateForm) = date_format(now(), :dateForm)", nativeQuery = true)
     int getTotalUsageCntByDate(@Param("dateForm") String dateForm);
 
-
-    @Query(value = "select usage_id, " +
-            "ifnull(sum(usage_num), 0) as usage_num, " +
-            "total_code, " +
-            "usage_time, " +
-            "user_seq," +
-            "item_id " +
-            "from item_usage " +
-            "where date_format(usage_time, :dateForm) = date_format(now(), :dateForm) " +
-            "group by user_seq"
-            , nativeQuery = true)
-    List<UsageEntity> getTotalUsageByDateGroupedUserAndItem(Pageable pageable, @Param("dateForm") String dateForm);
-
-    @Query(value = "select ifnull(count(us.usage_id), 0) " +
-            "from (" +
-            "select usage_id " +
-            "from item_usage " +
-            "where date_format(usage_time, :dateForm) = date_format(now(), :dateForm) " +
-            "group by user_seq) as us"
-            , nativeQuery = true)
-    int totalCountUsageByDateGroupedUserAndItem(@Param("dateForm") String dateForm);
-
-
-
-
-
-    // "select us.* " +
+// "select us.* " +
 //         "from item_usage as us " +
 //         "inner join (select * from item as i inner join user as u) as iu " +
 //         "on us.user_seq = iu.user_seq and us.item_id = iu.item_id " +

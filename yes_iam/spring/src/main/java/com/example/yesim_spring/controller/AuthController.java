@@ -1,9 +1,10 @@
 package com.example.yesim_spring.controller;
 
 
-import com.example.yesim_spring.database.Dto.*;
+import com.example.yesim_spring.database.Dto.JwtDto;
+import com.example.yesim_spring.database.Dto.LoginDto;
+import com.example.yesim_spring.database.Dto.SignUpDto;
 import com.example.yesim_spring.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +22,7 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestParam(name="userId") String userId, @RequestParam(name = "userPw") String userPw){
         try{
             JwtDto jwtDto = userService.getAuthToken(userId, userPw);
-            UserDto user = userService.findApprovedByUserId(userId);
-
-
-            LoginCmpltDto loginCmpltDto = LoginCmpltDto.of(user, jwtDto);
-
-            return ResponseEntity.ok(loginCmpltDto);
+            return ResponseEntity.ok(jwtDto);
         } catch (AuthenticationException e){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("login false");
         }
@@ -46,9 +42,8 @@ public class AuthController {
 
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(HttpServletRequest request){
+    public ResponseEntity<?> refreshToken(@RequestParam String refreshToken){
         try {
-            String refreshToken = request.getHeader("RefreshToken");
             String newAccessToken = userService.refreshAccessToken(refreshToken);
             return ResponseEntity.ok(newAccessToken);
         }
@@ -61,11 +56,5 @@ public class AuthController {
     public ResponseEntity<?> logout(){
         userService.logout();
         return null;
-    }
-
-    @GetMapping("/check/userId/duplicate")
-    public boolean checkUserIdDuplicate(@RequestParam(name = "userId") String userId){
-
-        return userService.checkUserIdDuplicate(userId);
     }
 }

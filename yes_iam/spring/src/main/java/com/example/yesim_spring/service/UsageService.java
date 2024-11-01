@@ -1,5 +1,7 @@
 package com.example.yesim_spring.service;
 
+import com.example.yesim_spring.database.Dto.ItemInOutDto;
+import com.example.yesim_spring.database.Dto.PurchaseDto;
 import com.example.yesim_spring.database.Dto.UsageDto;
 import com.example.yesim_spring.database.entity.PurchaseEntity;
 import com.example.yesim_spring.database.entity.define.RequestStatus;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -55,10 +58,10 @@ public class UsageService {
         return result;
     }
 
-    public Map<String, Object> totalCountUsageByDateGroupedUserAndItem(int pageNum, String dateForm){
+    public Map<String, Object> getTotalUsageListByDateAndUser(int pageNum, String dateForm, String userId){
         Map<String, Object> result = new HashMap<>();
-        result.put("totalUsageSum", usageRepository.getTotalUsageSumByDate(dateForm));
-        result.put("usageList", usageRepository.getTotalUsageByDateGroupedUserAndItem(PageRequest.of(pageNum, 10), dateForm)
+        result.put("totalUsageSum", usageRepository.getTotalUsageSumByDateAndUser(dateForm, userId));
+        result.put("usageList", usageRepository.getTotalUsageListByDateAndUser(PageRequest.of(pageNum, 10), dateForm, userId)
                 .stream().map(UsageDto::of).toList());
 
         return result;
@@ -92,7 +95,7 @@ public class UsageService {
                     .title("구매 요청 : " + item.getName())
                     .reqNum(item.getMinNum())
                     .reqTime(LocalDateTime.now())
-                    .approvedStatus(RequestStatus.WAIT)
+                    .approvedStatus(RequestStatus.UNCONFIRMED)
                     .approvalComment("적정 수량 부족으로 인한 요청입니다.")
                     .user(user)
                     .newYn("N")

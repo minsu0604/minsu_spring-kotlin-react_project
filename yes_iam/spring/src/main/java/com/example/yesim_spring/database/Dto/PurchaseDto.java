@@ -2,6 +2,9 @@ package com.example.yesim_spring.database.Dto;
 
 import com.example.yesim_spring.database.entity.PurchaseEntity;
 import com.example.yesim_spring.database.entity.define.RequestStatus;
+import org.apache.catalina.User;
+import org.springframework.cglib.core.Local;
+import org.springframework.security.core.parameters.P;
 
 import java.time.LocalDateTime;
 
@@ -56,43 +59,9 @@ public record PurchaseDto(
                 .reqNum(dto.reqNum)
                 .reqTime(LocalDateTime.now())
                 .approvedTime(null)
-                // unconfirmed로 들어가면 안됨
-                .approvedStatus(RequestStatus.WAIT)
+                .approvedStatus(RequestStatus.UNCONFIRMED)
                 .reqComment(dto.reqComment)
                 .approvalComment(null)
-                .newYn(dto.newYn)
-                .item(ItemDto.toEntity(dto.item))
-                .user(UserDto.toEntity(dto.user))
-                .build();
-    }
-
-    public static PurchaseEntity toApprovedEntity(PurchaseDto dto, String approvalComment){
-        return PurchaseEntity.builder()
-                .id(dto.id)
-                .title(dto.title)
-                .reqNum(dto.reqNum)
-                .reqTime(dto.reqTime)
-                .approvedTime(LocalDateTime.now())
-                .approvedStatus(RequestStatus.APPROVE)
-                .reqComment(dto.reqComment)
-                .approvalComment(approvalComment)
-                .newYn(dto.newYn)
-                .item(ItemDto.toEntity(dto.item))
-                .user(UserDto.toEntity(dto.user))
-                .build();
-    }
-
-
-    public static PurchaseEntity toRejectedEntity(PurchaseDto dto, String approvalComment){
-        return PurchaseEntity.builder()
-                .id(dto.id)
-                .title(dto.title)
-                .reqNum(dto.reqNum)
-                .reqTime(dto.reqTime)
-                .approvedTime(LocalDateTime.now())
-                .approvedStatus(RequestStatus.CANCEL)
-                .reqComment(dto.reqComment)
-                .approvalComment(approvalComment)
                 .newYn(dto.newYn)
                 .item(ItemDto.toEntity(dto.item))
                 .user(UserDto.toEntity(dto.user))

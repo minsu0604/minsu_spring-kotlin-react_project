@@ -1,21 +1,14 @@
 package com.example.yesim_spring.controller;
 
-import com.example.yesim_spring.database.Dto.*;
+import com.example.yesim_spring.database.Dto.PurchaseDto;
 import com.example.yesim_spring.database.entity.define.RequestStatus;
-import com.example.yesim_spring.service.ItemService;
 import com.example.yesim_spring.service.PurchaseService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalLong;
 
 import static com.example.yesim_spring.util.Const.*;
 
@@ -24,7 +17,6 @@ import static com.example.yesim_spring.util.Const.*;
 public class PurchaseController {
 
     private final PurchaseService purchaseService;
-    private final ItemService itemService;
 
     @GetMapping("/manager/purchase/detail/{purchaseId}")
     public PurchaseDto getPurchaseDetail(@PathVariable("purchaseId") long purchaseId) {
@@ -99,39 +91,21 @@ public class PurchaseController {
         return purchaseService.findAllPurchase(pageNum);
     }
 
-    @GetMapping("/manager/purchase/unconfirmed/{pageNum}")
+    @GetMapping("/s-manager/purchase/unconfirmed/{pageNum}")
     public List<PurchaseDto> getUnconfirmedPurchase(@PathVariable int pageNum){
 
         return purchaseService.findAllUnconfirmedPurchase(pageNum);
     }
 
-    @GetMapping("/manager/purchase/confirmed/{pageNum}")
+    @GetMapping("/s-manager/purchase/confirmed/{pageNum}")
     public List<PurchaseDto> getConfirmedPurchase(@PathVariable int pageNum){
         return purchaseService.findAllConfirmedPurchase(pageNum);
     }
 
-    @PostMapping("/manager/purchase/req")
-    public ResponseEntity<?> newPurchaseRequest(@RequestBody PurchaseDto purchaseDto){
-
+    @PostMapping("/user/purchase/req")
+    public ResponseEntity<?> addPurchase(@RequestBody PurchaseDto purchaseDto){
         purchaseService.reqPurchase(purchaseDto);
 
         return ResponseEntity.ok().build();
     }
-
-    @PostMapping("/s-manager/purchase/reject/{purchaseId}")
-    public void rejectPurchase(@PathVariable long purchaseId, @RequestBody String approvedComment) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> returnMap = mapper.readValue(approvedComment, Map.class);
-
-        purchaseService.rejectPurchase(purchaseId, returnMap.get("approvedComment"));
-    }
-
-    @PostMapping("/s-manager/purchase/approve/{purchaseId}")
-    public void approvePurchase(@PathVariable long purchaseId, @RequestBody String approvedComment) throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> returnMap = mapper.readValue(approvedComment, Map.class);
-
-        purchaseService.approvePurchase(purchaseId, returnMap.get("approvedComment"));
-    }
-
 }

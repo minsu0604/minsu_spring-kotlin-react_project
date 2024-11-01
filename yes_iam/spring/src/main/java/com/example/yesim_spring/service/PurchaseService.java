@@ -1,28 +1,24 @@
 package com.example.yesim_spring.service;
 
-import com.example.yesim_spring.database.Dto.ItemDto;
 import com.example.yesim_spring.database.Dto.PurchaseDto;
-import com.example.yesim_spring.database.entity.ItemEntity;
 import com.example.yesim_spring.database.entity.PurchaseEntity;
 import com.example.yesim_spring.database.entity.define.RequestStatus;
-import com.example.yesim_spring.database.repository.ItemRepository;
 import com.example.yesim_spring.database.repository.PurchaseRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.sql.init.dependency.DatabaseInitializationDependencyConfigurer;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.example.yesim_spring.util.CodeParser.MakeCode;
-
 @Service
 @RequiredArgsConstructor
 public class PurchaseService {
     private final PurchaseRepository purchaseRepository;
-    private final ItemRepository itemRepository;
+
 
     public PurchaseDto findById(Long id){
         var purchaseDetail = purchaseRepository.findById(id)
@@ -40,7 +36,7 @@ public class PurchaseService {
         Map<String, Object> data = new HashMap<>();
 
         data.put("totalPurchaseCnt", purchaseRepository.count());
-        data.put("purchaseList", purchaseRepository.findAll(PageRequest.of(pageNum, 4, Sort.by("reqTime").descending()))
+        data.put("purchaseList", purchaseRepository.findAll(PageRequest.of(pageNum, 4))
                 .stream().map(PurchaseDto::of).toList());
 
         return data;
@@ -49,16 +45,10 @@ public class PurchaseService {
     public Map<String, Object> findAllPurchaseByStatus(int pageNum, RequestStatus status){
         Map<String, Object> data = new HashMap<>();
 
-        if(status == RequestStatus.APPROVE){
-            data.put("totalPurchaseCnt", purchaseRepository.getTotalCountInStockOrApprove());
-            data.put("purchaseList", purchaseRepository.getTotalListInStockOrApprove(PageRequest.of(pageNum, 4))
-                    .stream().map(PurchaseDto::of).toList());
-        }
-        else{
-            data.put("totalPurchaseCnt", purchaseRepository.countAllByApprovedStatus(status));
-            data.put("purchaseList", purchaseRepository.findAllByApprovedStatusOrderByReqTimeDescApprovedTimeDesc(status, PageRequest.of(pageNum, 4))
-                    .stream().map(PurchaseDto::of).toList());
-        }
+
+        data.put("totalPurchaseCnt", purchaseRepository.countAllByApprovedStatus(status));
+        data.put("purchaseList", purchaseRepository.findAllByApprovedStatus(status, PageRequest.of(pageNum, 4))
+                .stream().map(PurchaseDto::of).toList());
 
         return data;
     }
@@ -84,6 +74,7 @@ public class PurchaseService {
         for(var purchase : puchaseList){
             switch(purchase.getApprovedStatus()){
                 case WAIT:
+                case UNCONFIRMED:
                     wait++;
                     break;
 
@@ -125,57 +116,19 @@ public class PurchaseService {
     }
 
     public List<PurchaseDto> findAllUnconfirmedPurchase(int pageNum){
-        return purchaseRepository.findAllByApprovedStatusOrderByReqTimeDescApprovedTimeDesc(RequestStatus.WAIT, PageRequest.of(pageNum, 10))
+        return purchaseRepository.findAllByApprovedStatus(RequestStatus.UNCONFIRMED, PageRequest.of(pageNum, 10))
                 .stream().map(PurchaseDto::of).toList();
     }
 
     public List<PurchaseDto> findAllConfirmedPurchase(int pageNum){
-        return purchaseRepository.findAllByApprovedStatusNotOrderByReqTimeDescApprovedTimeDesc(RequestStatus.WAIT, PageRequest.of(pageNum, 10))
+        return purchaseRepository.findAllByApprovedStatusNot(RequestStatus.UNCONFIRMED, PageRequest.of(pageNum, 10))
                 .stream().map(PurchaseDto::of).toList();
     }
 
 
     public void reqPurchase(PurchaseDto purchaseDto){
-
-        ItemDto itemDTO = purchaseDto.item();
-        PurchaseEntity purchaseEntity = PurchaseDto.toNewEntity(purchaseDto);
-        if (itemDTO.id() < 0) {
-            itemRepository.save(ItemDto.toNewItemEntity(itemDTO));
-
-            ItemEntity newItem = itemRepository.findByName(itemDTO.name());
-
-            String totalCode = MakeCode(newItem.getCompany().getCode(),
-                    "0" + newItem.getId(),
-                    newItem.getContainer().getSection());
-
-            newItem.addCode(totalCode);
-
-            purchaseEntity.setItem(newItem);
-        }
-        purchaseRepository.save(purchaseEntity);
+        purchaseRepository.save(PurchaseDto.toNewEntity(purchaseDto));
     }
 
     public void reqPurchase(PurchaseEntity purchaseEntity){purchaseRepository.save(purchaseEntity);}
-
-    public void requestMinItem(Long itemId) {
-
-
-
-
-    }
-
-
-    public void rejectPurchase(long purchaseId, String approvedComment){
-        PurchaseEntity entity = purchaseRepository.findById(purchaseId).orElseThrow(() -> new IllegalArgumentException("no purchase"));
-        entity.rejectPurchase(approvedComment);
-        purchaseRepository.save(entity);
-    }
-
-
-
-    public void approvePurchase(long purchaseId, String approvedComment){
-        PurchaseEntity entity = purchaseRepository.findById(purchaseId).orElseThrow(() -> new IllegalArgumentException("no purchase"));
-        entity.approvePurchase(approvedComment);
-        purchaseRepository.save(entity);
-    }
 }

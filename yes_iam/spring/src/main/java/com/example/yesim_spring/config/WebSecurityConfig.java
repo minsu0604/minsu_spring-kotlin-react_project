@@ -50,15 +50,10 @@ public class WebSecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**","/error",  "/image/**", "/auth/refresh")
+                        .requestMatchers("/auth/**", "/s-manager/**", "/manager/**", "/user/**","/error",  "/image/**")
                         .permitAll()
-
-                        .requestMatchers("/s-manager/**")
-                        .hasRole("SENIOR_MANAGER")
-
-                        .requestMatchers("/manager/**")
-                        .hasAnyRole("SENIOR_MANAGER", "MANAGER")
-
+//                        .requestMatchers("/manager/**")
+//                        .hasAnyRole("SENIOR_MANAGER", "MANAGER")
                         .anyRequest()
                         .authenticated()
                 )

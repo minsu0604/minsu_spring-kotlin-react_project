@@ -25,6 +25,7 @@ public class CodeParser {
     }
 
     static public String MakeCode(String companyCode,
+
                            String itemCode,
                            String containerCode){
 
