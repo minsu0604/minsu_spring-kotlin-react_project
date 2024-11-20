@@ -53,3 +53,6 @@ DB 데이터 기입 및 관리
 
 <h2>🔑 사용한 API</h2>
 <a href="https://github.com/zxing/zxing/tree/master">Zxing - QR code</a>
+
+<h2>🎬 시연 영상</h2>
+<a href="https://youtu.be/S9ob_ej_wTM">유튜브 링크</a>
